@@ -1,0 +1,122 @@
+//////////////////////////////////////////////////////////////////
+// NAME: Corey Burmeister
+// ASSIGNMENT: 10
+// DUE: 4/24/2012
+//////////////////////////////////////////////////////////////////
+
+#include "/home/onyuksel/courses/340/progs/12s/p10/hTable.h"
+
+#ifndef H_TABLE
+#define H_TABLE
+
+void ptr_sort ( vector <Entry*> );
+bool predicate ( Entry*, Entry* );
+
+// constructor
+HT::HT (  const unsigned& s )
+{
+	hTable.resize(s);
+	pTable.resize(s);
+	psize = 0;
+	hsize = TBL_SZ;
+	for (unsigned int i = 0; i != s; i++)
+	{
+		hTable[i].key = FREE;
+	}
+}
+
+// destructor
+HT::~HT()
+{
+}
+
+// inserts item into hash table
+void HT::insert ( const Entry& e )
+{
+	int index = hash(e.key);
+	unsigned int i;
+	for (i = 0; i < hsize; i++)
+	{
+		if (hTable[(index+i)%hsize].key == FREE)
+		{
+			// use open addressing: linear probing for collision resolution
+			cout << " entry = " << (index + i) % hsize << endl;
+			hTable[(index+i)%hsize] = e;
+			pTable[psize] = &hTable[(index+i)%hsize];
+			psize++;
+			break;
+		}
+		if (hTable[(index+i)%hsize].key == e.key)
+		{
+			cout << " not inserted - duplicate key!!!" << endl;
+			break;
+		}
+	}
+	if (i == hsize)
+		cout << " not inserted - table full!!!" << endl;
+}
+
+// searches hash table for key
+void HT::search ( const string& s )
+{
+	int index = hash(s);
+	unsigned int i;
+	for (i = 0; i < hsize; i++)
+	{
+		if (hTable[(index+i)%hsize].key == s)
+		{
+			cout << " ==> number: "
+			<< setw(4) << hTable[(index+i)%hsize].num
+			<< " - item: " << hTable[(index+i)%hsize].desc
+			<< endl;
+			break;
+		}
+	}
+	if (hTable[(index+i)%hsize].key != s)
+		cout << " not in table!!" << endl;
+}
+
+// prints hash table
+void HT::hTable_print ( )
+{
+	bool lastEmpty = false;
+	for ( unsigned int i = 0; i < hsize; i++ )
+	{
+		if ( hTable[i].key != FREE )
+		{
+			if ( lastEmpty ) cout << endl;
+			cout << setw(4) << i << ":  " << hTable[i].key << " - "
+			<< setw(5) << hTable[i].num << "   -  " << hTable[i].desc << endl;
+			lastEmpty = false;
+		}
+		else lastEmpty = true;
+	}
+	cout << endl;
+}
+
+// prints pointer table
+void HT::pTable_print ( )
+{
+	ptr_sort( pTable );
+	for (unsigned int i = 0; i < psize; i++ )
+	{
+		cout << "   " << pTable[i]->key
+		<< " - " << right << setw(4) << pTable[i]->num
+		<< " - " << left << pTable[i]->desc << endl;
+	}
+	cout << endl;
+}
+
+// sorts pointer table
+void ptr_sort ( vector <Entry*> pTable )
+{
+	sort( pTable.begin(), pTable.end(), predicate );
+}
+
+// predicate for pointer table sort function
+bool predicate ( Entry* left, Entry* right )
+{
+	if( left->key < right->key ) return true; return false;
+}
+
+#endif
